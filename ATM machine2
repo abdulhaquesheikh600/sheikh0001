@@ -1,0 +1,149 @@
+import inquirer from 'inquirer';
+
+interface User {
+  name: string;
+  pin: number;
+  balance: number;
+}
+
+let users: User[] = [];
+
+async function createUser() {
+  const { name, pin } = await inquirer.prompt([
+    { type: 'input', name: 'name', message: 'Enter your name:' },
+    { type: 'password', name: 'pin', message: 'Enter your PIN:' },
+  ]);
+
+  const user: User = { name, pin: parseInt(pin), balance: 0 };
+  users.push(user);
+  console.log(`User created successfully!`);
+}
+
+async function login() {
+  const { name, pin } = await inquirer.prompt([
+    { type: 'input', name: 'name', message: 'Enter your name:' },
+    { type: 'password', name: 'pin', message: 'Enter your PIN:' },
+  ]);
+
+  const user: User | undefined = users.find((user) => user.name === name && user.pin === parseInt(pin));
+
+  if (!user) {
+    console.log('Invalid credentials!');
+    return;
+  }
+
+  console.log(`Logged in successfully! Your balance is $${user.balance}.`);
+}
+
+async function deposit() {
+  const { name, amount } = await inquirer.prompt([
+    { type: 'input', name: 'name', message: 'Enter your name:' },
+    { type: 'number', name: 'amount', message: 'Enter the amount to deposit:' },
+  ]);
+
+  const user: User | undefined = users.find((user) => user.name === name);
+
+  if (!user) {
+    console.log('User not found! Please create a new account or enter the correct name.');
+    return;
+  }
+
+  if (amount <= 0) {
+    console.log('Invalid amount! Please enter a positive number.');
+    return;
+  }
+
+  user.balance += amount;
+  console.log(`Deposited $${amount} successfully! Your new balance is $${user.balance}.`);
+}
+
+async function withdraw() {
+  const { name, amount } = await inquirer.prompt([
+    { type: 'input', name: 'name', message: 'Enter your name:' },
+    { type: 'number', name: 'amount', message: 'Enter the amount to withdraw:' },
+  ]);
+
+  const user: User | undefined = users.find((user) => user.name === name);
+
+  if (!user) {
+    console.log('User not found! Please create a new account or enter the correct name.');
+    return;
+  }
+
+  if (amount <= 0) {
+    console.log('Invalid amount! Please enter a positive number.');
+    return;
+  }
+
+  if (user.balance < amount) {
+    console.log('Insufficient balance!');
+    return;
+  }
+
+  user.balance -= amount;
+  console.log(`Withdrew $${amount} successfully! Your new balance is $${user.balance}.`);
+}
+
+async function checkBalance() {
+  const { name } = await inquirer.prompt([
+    { type: 'input', name: 'name', message: 'Enter your name:' },
+  ]);
+
+  const user: User | undefined = users.find((user) => user.name === name);
+
+  if (!user) {
+    console.log('User not found! Please create a new account or enter the correct name.');
+    return;
+  }
+
+  console.log(`Your balance is $${user.balance}.`);
+}
+
+async function main() {
+  while (true) {
+    try {
+      const { action } = await inquirer.prompt({
+        type: 'list',
+        name: 'action',
+        message: 'Select an action:',
+        choices: [
+          { name: 'Create User', value: 'create' },
+          { name: 'Login', value: 'login' },
+          { name: 'Deposit', value: 'deposit' },
+          { name: 'Withdraw', value: 'withdraw' },
+          { name: 'Check Balance', value: 'checkBalance' },
+          { name: 'Exit', value: 'exit' },
+        ],
+      });
+
+      switch (action) {
+        case 'create':
+          await createUser();
+          break;
+        case 'login':
+          await login();
+          break;
+        case 'deposit':
+          await deposit();
+          break;
+        case 'withdraw':
+          await withdraw();
+          break;
+        case 'checkBalance':
+          await checkBalance();
+          break;
+        case 'exit':
+          console.log('Goodbye!');
+          return;
+      }
+    } catch (error) {
+      console.log('An error occurred:', error);
+    }
+  }
+}
+
+async function start() {
+  await main();
+}
+
+start();
